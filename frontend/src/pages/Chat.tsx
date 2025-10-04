@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -171,7 +169,8 @@ const ChatPage = () => {
         sessionId,
       });
 
-      const fullResponse = response.data.data || "Sorry, I encountered an error.";
+      const fullResponse =
+        response.data.data || "Sorry, I encountered an error.";
       let displayed = "";
       const words = fullResponse.split(" ");
 
@@ -246,8 +245,8 @@ const ChatPage = () => {
                     Women's Health Assistant
                   </h3>
                   <p className="text-purple-700 mb-4 max-w-md">
-                    Ask me anything about women's reproductive health, pregnancy,
-                    or infertility.
+                    Ask me anything about women's reproductive health,
+                    pregnancy, or infertility.
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 w-full">
                     {exampleQuestions.map((q, i) => (
@@ -275,25 +274,46 @@ const ChatPage = () => {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      code({ inline, children, ...props }) {
-                        return !inline ? (
-                          <SyntaxHighlighter
-                            style={vscDarkPlus}
-                            PreTag="div"
+                      code({ inline, className, children, ...props }) {
+                        if (!inline) {
+                          return (
+                            <SyntaxHighlighter
+                              style={vscDarkPlus}
+                              PreTag="div"
+                              className={className}
+                              {...props}
+                            >
+                              {String(children).replace(/\n$/, "")}
+                            </SyntaxHighlighter>
+                          );
+                        }
+                        return (
+                          <code
+                            className="bg-yellow-100 px-1 rounded"
                             {...props}
                           >
-                            {String(children).replace(/\n$/, "")}
-                          </SyntaxHighlighter>
-                        ) : (
-                          <code className="bg-yellow-100 px-1 rounded" {...props}>
                             {children}
                           </code>
+                        );
+                      },
+                      li({ children }) {
+                        return <li className="ml-4 list-disc">{children}</li>;
+                      },
+                      p({ children }) {
+                        return <p className="mb-2">{children}</p>;
+                      },
+                      h3({ children }) {
+                        return (
+                          <h3 className="text-lg font-semibold mt-3 mb-1">
+                            {children}
+                          </h3>
                         );
                       },
                     }}
                   >
                     {msg.content}
                   </ReactMarkdown>
+
                   <div className="text-xs text-purple-700 mt-1 text-right">
                     {new Date(msg.timestamp).toLocaleTimeString()}
                   </div>
@@ -341,4 +361,3 @@ const ChatPage = () => {
 };
 
 export default ChatPage;
-
