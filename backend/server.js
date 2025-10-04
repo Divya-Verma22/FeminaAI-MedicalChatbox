@@ -1,42 +1,47 @@
-import express from 'express'
-import cors from 'cors'
-import 'dotenv/config'
-import chatRouter from './routes/chatRoute.js'
+import express from "express";
+import cors from "cors";
+import "dotenv/config";
+import chatRouter from "./routes/chatRoute.js";
 
-// App config
-const app = express()
-const port = process.env.PORT || 4000
+const app = express();
+const port = process.env.PORT || 4000;
 
-// Middleware
-app.use(express.json())
+// ---------------- Allowed Origins -----------------
+const allowedOrigins = [
+  process.env.FRONTEND_URL,                        // deployed frontend URL
+  "http://localhost:8080",                         // local dev
+];
+
+// ---------------- CORS Middleware -----------------
 app.use(cors({
-  origin: [process.env.FRONTEND_URL],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'token'],
-  exposedHeaders: ['Content-Type', 'Authorization', 'token'],
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "token"],
+  exposedHeaders: ["Content-Type", "Authorization", "token"],
   credentials: true
-}))
+}));
 
-// Add preflight handler for all routes
-app.options('*', cors())
+app.options("*", cors()); // handle preflight
 
-// API endpoints
-app.use('/api', chatRouter)
+// ---------------- Middleware -----------------
+app.use(express.json());
 
-// Health check route
-app.get('/', (req, res) => {
-  res.send('API Working')
-})
+// ---------------- Routes -----------------
+app.use("/api", chatRouter);
 
-// Error handling middleware
+app.get("/", (req, res) => res.send("API Working"));
+
+// ---------------- Error Handling -----------------
 app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(500).json({
-    success: false,
-    message: 'Internal server error',
-    error: err.message
-  })
-})
+  console.error(err.stack);
+  res.status(500).json({ success: false, message: err.message });
+});
 
-// Start server
-app.listen(port, () => console.log(`Server started on PORT: ${port}`))
+// ---------------- Start Server -----------------
+app.listen(port, () => console.log(`Server running on port ${port}`));
